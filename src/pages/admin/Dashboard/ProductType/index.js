@@ -9,6 +9,9 @@ import {
     message,
 } from "antd";
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux"
+import { typesInTableSelector } from "../../../../redux/selector";
+import { fetchProductTypes } from "../../../../redux/slice/productTypeSlice";
 
 const columns = [
     {
@@ -39,79 +42,89 @@ function ProductType({ isModalOpen, setIsModalOpen }) {
     const [type, setType] = useState("");
     const [status, setStatus] = useState("");
 
-    useEffect(() => {
-        fetch("http://localhost:3001/api/v1/product-types/")
-            .then((res) => res.json())
-            .then((res) => {
-                const _res = res.data;
-                const _resources = _res.map((res, index) => {
-                    return {
-                        key: res._id,
-                        id: index,
-                        type: res.name,
-                        status: res.selling ? "Đang bán" : "Hết hàng",
-                        handle: (
-                            <>
-                                <Button onClick={() => setIsModalOpen(true)}>
-                                    Sửa
-                                </Button>{" "}
-                                <Popconfirm
-                                    title="Bạn có chắc muốn xóa loại sản phẩm này?"
-                                    onConfirm={confirm}
-                                    onCancel={cancel}
-                                    okText="Đúng"
-                                    cancelText="Hủy"
-                                >
-                                    <Button onClick={() => null}>Xóa</Button>
-                                </Popconfirm>
-                            </>
-                        ),
-                    };
-                });
+    const dispatch = useDispatch();
+    const types = useSelector(typesInTableSelector);
 
-                setResources(_resources);
-            });
-    });
+    useEffect(() => {
+        dispatch(fetchProductTypes());
+    }, []);
+
+    useEffect(() => {
+        const _resources = types?.map(type => {
+            return {
+                ...type, handle: (
+                    <>
+                        <Button
+                            style={{ marginRight: 4, background: '#ccc' }}
+                            onClick={() => {
+                                setIsModalOpen(true);
+                                loadDataToModal(type);
+                            }}>
+                            Sửa
+                        </Button>
+                        <Popconfirm
+                            title="Bạn có chắc muốn xóa loại sản phẩm này?"
+                            onConfirm={() => confirm({ id: type.key })}
+                            onCancel={cancel}
+                            okText="Đúng"
+                            cancelText="Hủy"
+                        >
+                            <Button style={{ background: 'red', color: '#fff' }}
+                                onClick={() => null}>Xóa</Button>
+                        </Popconfirm>
+                    </>
+                ),
+            }
+        })
+
+        setResources(_resources);
+    }, [types])
+
+    const loadDataToModal = (val) => {
+        const { key, type, status } = val;
+        setId(key);
+        setType(type);
+        setStatus(status);
+    }
+
+    const resetInput = () => {
+        setId('');
+        setType('');
+        setStatus('Đang bán');
+    }
 
     const handleOk = () => {
         setIsModalOpen(false);
-        console.log(id, type, status);
+        console.log({ id, type, status });
+        resetInput();
     };
 
     const handleCancel = () => {
         setIsModalOpen(false);
+        resetInput();
     };
 
     const confirm = (e) => {
         console.log(e);
-        message.success("Click on Yes");
+        message.success("Bạn đã chọn xóa!");
     };
+
     const cancel = (e) => {
         console.log(e);
-        message.error("Click on No");
+        message.error("Bạn đã chọn hủy!");
     };
+
     return (
         <>
             <Table
                 columns={columns}
                 dataSource={resources}
                 size="middle"
-                onRow={(record, index) => {
-                    return {
-                        onClick: (event) => {
-                            const { key, type, status } = record;
-                            setId(key);
-                            setType(type);
-                            setStatus(status === "Đang bán" ? true : false);
-                        }, // click row
-                    };
-                }}
             ></Table>
 
             <Modal
                 title="Thêm loại sản phẩm"
                 open={isModalOpen}
-                onOk={handleOk}
                 onCancel={handleCancel}
                 footer={[
                     <Button key="back" onClick={handleCancel}>
@@ -146,17 +159,17 @@ function ProductType({ isModalOpen, setIsModalOpen }) {
                     <Form.Item label="Trạng thái">
                         <Select
                             defaultValue={{
-                                value: status,
+                                value: status === 'Đang bán' ? true : false,
                                 label:
-                                    status === true ? "Đang bán" : "Hết hàng",
+                                    status === '' ? 'Đang bán' : status,
                             }}
                             options={[
                                 {
-                                    value: "true",
+                                    value: true,
                                     label: "Đang bán",
                                 },
                                 {
-                                    value: "false",
+                                    value: false,
                                     label: "Hết hàng",
                                 },
                             ]}

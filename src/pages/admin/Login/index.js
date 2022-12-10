@@ -15,7 +15,8 @@ function Login() {
 
     useEffect(() => {
         if (user) {
-            navigate("/dashboard");
+            // defined in routers
+            navigate("/admin/dashboard");
             return;
         }
 

@@ -5,7 +5,7 @@ import LoginPage from "../pages/admin/Login";
 function RootRouters() {
     return (
         <Routes>
-            <Route path="/dashboard" element={<DashBoardPage />} />
+            <Route path="/admin/dashboard" element={<DashBoardPage />} />
             <Route path="/" element={<HomePage />} />
             <Route path="/admin/login" element={<LoginPage />} />
         </Routes>

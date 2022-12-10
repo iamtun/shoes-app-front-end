@@ -7,7 +7,7 @@ import {
     VideoCameraOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu } from "antd";
-import styles from "./nav.module.css";
+import styles from "./Nav.module.scss";
 import Products from "./Products";
 
 
